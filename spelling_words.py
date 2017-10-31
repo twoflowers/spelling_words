@@ -14,12 +14,12 @@ while len(words) != len(used):
         print(random_word)
         used.append(random_word)
 
-        time.sleep(5)
+        time.sleep(6)
         os.system('clear')
     
         for letters in random_word:
             print(letters)
-            time.sleep(2)
+            time.sleep(1)
         print(random_word)
     
     random_word = random.choice(words)

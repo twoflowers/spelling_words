@@ -1,10 +1,17 @@
+# coding=utf-8
 import random
 import os
 import time
 import sqlite3
 import sys
 import argparse
-
+import json
+from os.path import join, dirname
+from watson_developer_cloud import TextToSpeechV1
+import subprocess
+import requests
+# from playsound import playsound
+from pygame import mixer
 
 base_words = ['fish', 'wish', 'shop', 'ship', 'rush', 'made', 'name', 'cake', 'late', 'safe']
 used = []
@@ -37,6 +44,35 @@ def execute_sql(sql_statement):
 
     return rows
 
+def say_word(word):
+
+    # exec('Say ' + word)
+    subprocess.call('Say ' + word, shell=True)
+
+
+    # headers = {
+    #     'Content-Type': 'application/json',
+    #     'Accept': 'audio/wav',
+    # }
+    #
+    # params = (
+    #     ('voice', 'en-US_AllisonVoice'),
+    # )
+    #
+    # data = '{"text":"%s"}' % (word)
+    #
+    #
+    # with open('resources/'+word+'.wav', mode='wb+') as audio_file:
+    #     response = requests.post('https://stream.watsonplatform.net/text-to-speech/api/v1/synthesize', stream=True, headers=headers, params=params, data=data, auth=('4ef7923c-a9b1-43d6-b466-95f4bb32708c', 'q4BjDwfaeCOj'))
+    #     audio_file.write(response.content)
+
+
+
+    # mixer.init() #you must initialize the mixer
+    # alert=mixer.Sound('resources/'+word+'.wav')
+    # alert.play()
+    # playsound('resources/'+word+'.wav')
+    # subprocess.call(["afplay", 'resources/'+word+'.wav'])
 
 def add_word(word):
     sql = "insert into words (name) values ('%s')" % (word)
@@ -55,15 +91,15 @@ def the_game():
         if random_word not in used:
             print(random_word)
             used.append(random_word)
-
-            time.sleep(6)
+            say_word(random_word)
+            time.sleep(3)
             os.system('clear')
-    
+
             for letters in random_word:
                 print(letters)
                 time.sleep(1)
             print(random_word)
-    
+
         random_word = random.choice(words)[0]
 
 
@@ -91,5 +127,3 @@ if __name__ == '__main__':
         sys.exit()
     else:
         the_game()
-
-

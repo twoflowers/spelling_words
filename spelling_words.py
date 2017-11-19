@@ -10,8 +10,7 @@ from os.path import join, dirname
 from watson_developer_cloud import TextToSpeechV1
 import subprocess
 import requests
-# from playsound import playsound
-from pygame import mixer
+import speech_recognition as sr
 
 base_words = ['fish', 'wish', 'shop', 'ship', 'rush', 'made', 'name', 'cake', 'late', 'safe']
 used = []
@@ -44,35 +43,35 @@ def execute_sql(sql_statement):
 
     return rows
 
+def text_to_speech(word):
+    subprocess.call('Say -v Victoria ' + word, shell=True)
+
 def say_word(word):
 
-    # exec('Say ' + word)
-    subprocess.call('Say ' + word, shell=True)
+    text_to_speech(word)
+
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        audio = r.listen(source)
+
+    # Speech recognition using Google Speech Recognition
+    try:
+        # for testing purposes, we're just using the default API key
+        # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
+        # instead of `r.recognize_google(audio)`
+        print("You said: " + r.recognize_google(audio))
+    except sr.UnknownValueError:
+        print("Google Speech Recognition could not understand audio")
+    except sr.RequestError as e:
+        print("Could not request results from Google Speech Recognition service; {0}".format(e))
+
+    if r.recognize_google(audio).lower().replace(" ", "") == word.lower():
+        text_to_speech('Great Job')
+    else:
+        # we had an error, with either the spellign or something, lets try it again
+        say_word(word)
 
 
-    # headers = {
-    #     'Content-Type': 'application/json',
-    #     'Accept': 'audio/wav',
-    # }
-    #
-    # params = (
-    #     ('voice', 'en-US_AllisonVoice'),
-    # )
-    #
-    # data = '{"text":"%s"}' % (word)
-    #
-    #
-    # with open('resources/'+word+'.wav', mode='wb+') as audio_file:
-    #     response = requests.post('https://stream.watsonplatform.net/text-to-speech/api/v1/synthesize', stream=True, headers=headers, params=params, data=data, auth=('4ef7923c-a9b1-43d6-b466-95f4bb32708c', 'q4BjDwfaeCOj'))
-    #     audio_file.write(response.content)
-
-
-
-    # mixer.init() #you must initialize the mixer
-    # alert=mixer.Sound('resources/'+word+'.wav')
-    # alert.play()
-    # playsound('resources/'+word+'.wav')
-    # subprocess.call(["afplay", 'resources/'+word+'.wav'])
 
 def add_word(word):
     sql = "insert into words (name) values ('%s')" % (word)
@@ -96,13 +95,12 @@ def the_game():
             os.system('clear')
 
             for letters in random_word:
-                print(letters)
+                # print(letters)
                 time.sleep(1)
-            print(random_word)
+            # print(random_word)
 
+        sys.exit()
         random_word = random.choice(words)[0]
-
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='This is a spelling game.')

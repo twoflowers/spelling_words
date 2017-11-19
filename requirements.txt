@@ -1,0 +1,6 @@
+SpeechRecognition
+sqlite3
+argparse
+requests
+json
+pyyaml

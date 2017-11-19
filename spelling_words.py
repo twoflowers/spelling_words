@@ -46,6 +46,15 @@ def execute_sql(sql_statement):
 def text_to_speech(word):
     subprocess.call('Say -v Victoria ' + word, shell=True)
 
+def update_score(sql):
+    sqlite_file = 'database/words.db'
+
+    conn = sqlite3.connect(sqlite_file)
+    c = conn.cursor()
+    c.execute(sql)
+    conn.commit()
+
+
 def say_word(word):
 
     text_to_speech(word)
@@ -59,7 +68,8 @@ def say_word(word):
         # for testing purposes, we're just using the default API key
         # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
         # instead of `r.recognize_google(audio)`
-        print("You said: " + r.recognize_google(audio))
+        response = r.recognize_google(audio)
+        print("You said: " + response)
     except sr.UnknownValueError:
         print("Google Speech Recognition could not understand audio")
     except sr.RequestError as e:
@@ -67,9 +77,17 @@ def say_word(word):
 
     if r.recognize_google(audio).lower().replace(" ", "") == word.lower():
         text_to_speech('Great Job')
+
+        sql = "insert into scores (word, answer) values ('%s', 1)" % word
+        print(sql)
+        update_score(sql)
+
     else:
         # we had an error, with either the spellign or something, lets try it again
         say_word(word)
+        sql = "insert into scores (word, spelling, answer) values ('%s', '%s', 0)" % (word, response)
+        print(sql)
+        update_score(sql)
 
 
 
@@ -91,15 +109,9 @@ def the_game():
             print(random_word)
             used.append(random_word)
             say_word(random_word)
-            time.sleep(3)
+            time.sleep(1)
             os.system('clear')
 
-            for letters in random_word:
-                # print(letters)
-                time.sleep(1)
-            # print(random_word)
-
-        sys.exit()
         random_word = random.choice(words)[0]
 
 if __name__ == '__main__':

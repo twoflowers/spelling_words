@@ -1,10 +1,16 @@
+# coding=utf-8
 import random
 import os
 import time
 import sqlite3
 import sys
 import argparse
-
+import json
+from os.path import join, dirname
+from watson_developer_cloud import TextToSpeechV1
+import subprocess
+import requests
+import speech_recognition as sr
 
 base_words = ['fish', 'wish', 'shop', 'ship', 'rush', 'made', 'name', 'cake', 'late', 'safe']
 used = []
@@ -37,6 +43,35 @@ def execute_sql(sql_statement):
 
     return rows
 
+def text_to_speech(word):
+    subprocess.call('Say -v Victoria ' + word, shell=True)
+
+def say_word(word):
+
+    text_to_speech(word)
+
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        audio = r.listen(source)
+
+    # Speech recognition using Google Speech Recognition
+    try:
+        # for testing purposes, we're just using the default API key
+        # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
+        # instead of `r.recognize_google(audio)`
+        print("You said: " + r.recognize_google(audio))
+    except sr.UnknownValueError:
+        print("Google Speech Recognition could not understand audio")
+    except sr.RequestError as e:
+        print("Could not request results from Google Speech Recognition service; {0}".format(e))
+
+    if r.recognize_google(audio).lower().replace(" ", "") == word.lower():
+        text_to_speech('Great Job')
+    else:
+        # we had an error, with either the spellign or something, lets try it again
+        say_word(word)
+
+
 
 def add_word(word):
     sql = "insert into words (name) values ('%s')" % (word)
@@ -55,18 +90,17 @@ def the_game():
         if random_word not in used:
             print(random_word)
             used.append(random_word)
-
-            time.sleep(6)
+            say_word(random_word)
+            time.sleep(3)
             os.system('clear')
-    
+
             for letters in random_word:
-                print(letters)
+                # print(letters)
                 time.sleep(1)
-            print(random_word)
-    
+            # print(random_word)
+
+        sys.exit()
         random_word = random.choice(words)[0]
-
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='This is a spelling game.')
@@ -91,5 +125,3 @@ if __name__ == '__main__':
         sys.exit()
     else:
         the_game()
-
-

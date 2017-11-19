@@ -79,7 +79,6 @@ def say_word(word):
         text_to_speech('Great Job')
 
         sql = "insert into scores (word, answer) values ('%s', 1)" % word
-        print(sql)
         update_score(sql)
 
     else:
